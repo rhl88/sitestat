@@ -1,0 +1,180 @@
+{
+    "id": "cmspro.sitestat",
+    "name": "访问统计",
+    "description": "网站访问统计应用，支持PV/UV统计、IP地域分布、来源分析、页面热度、设备浏览器统计、蜘蛛爬虫追踪",
+    "version": "1.0.1",
+    "author": "CmsPro",
+    "icon": "fa fa-bar-chart",
+    "require": {
+        "php": ">=8.3",
+        "cmspro": ">=5.0.0"
+    },
+    "dependencies": {
+        "app_ids": [
+            "cmspro.iplocation"
+        ],
+        "versions": []
+    },
+    "providers": [
+        "ServiceProvider"
+    ],
+    "install": "Install",
+    "menus": [
+        {
+            "title": "访问统计",
+            "icon": "fa fa-bar-chart",
+            "path": "/admin/cmspro/sitestat",
+            "code": "admin_cmspro_sitestat",
+            "order": 85,
+            "children": [
+                {
+                    "title": "访问概览",
+                    "icon": "fa fa-tachometer",
+                    "path": "/admin/cmspro/sitestat/dashboard",
+                    "code": "admin_cmspro_sitestat_dashboard",
+                    "order": 1
+                },
+                {
+                    "title": "访客地域",
+                    "icon": "fa fa-map-marker",
+                    "path": "/admin/cmspro/sitestat/region",
+                    "code": "admin_cmspro_sitestat_region",
+                    "order": 2
+                },
+                {
+                    "title": "来源分析",
+                    "icon": "fa fa-external-link",
+                    "path": "/admin/cmspro/sitestat/source",
+                    "code": "admin_cmspro_sitestat_source",
+                    "order": 3
+                },
+                {
+                    "title": "页面统计",
+                    "icon": "fa fa-file-text",
+                    "path": "/admin/cmspro/sitestat/page",
+                    "code": "admin_cmspro_sitestat_page",
+                    "order": 4
+                },
+                {
+                    "title": "设备分析",
+                    "icon": "fa fa-desktop",
+                    "path": "/admin/cmspro/sitestat/device",
+                    "code": "admin_cmspro_sitestat_device",
+                    "order": 5
+                },
+                {
+                    "title": "访客明细",
+                    "icon": "fa fa-users",
+                    "path": "/admin/cmspro/sitestat/visitor",
+                    "code": "admin_cmspro_sitestat_visitor",
+                    "order": 6
+                },
+                {
+                    "title": "蜘蛛统计",
+                    "icon": "fa fa-bug",
+                    "path": "/admin/cmspro/sitestat/spider",
+                    "code": "admin_cmspro_sitestat_spider",
+                    "order": 7
+                },
+                {
+                    "title": "统计设置",
+                    "icon": "fa fa-cog",
+                    "path": "/admin/cmspro/sitestat/settings",
+                    "code": "admin_cmspro_sitestat_settings",
+                    "order": 8
+                }
+            ]
+        }
+    ],
+    "config_groups": [
+        {
+            "name": "sitestat_settings",
+            "title": "访问统计设置",
+            "items": [
+                {
+                    "name": "track_mode",
+                    "title": "统计模式",
+                    "type": "select",
+                    "value": "full",
+                    "options": [
+                        {
+                            "label": "全量统计",
+                            "value": "full"
+                        },
+                        {
+                            "label": "抽样统计",
+                            "value": "sample"
+                        }
+                    ],
+                    "tips": "全量统计记录所有访问，抽样统计仅记录部分访问以降低服务器压力"
+                },
+                {
+                    "name": "sample_rate",
+                    "title": "抽样率",
+                    "type": "number",
+                    "value": "10",
+                    "tips": "抽样模式下生效，取值1-100，表示记录百分之几的访问"
+                },
+                {
+                    "name": "exclude_paths",
+                    "title": "排除路径",
+                    "type": "textarea",
+                    "value": "",
+                    "tips": "不统计的页面路径，每行一个，支持通配符，如 /admin/*、/api/*"
+                },
+                {
+                    "name": "data_retention_days",
+                    "title": "原始数据保留天数",
+                    "type": "number",
+                    "value": "90",
+                    "tips": "超过保留天数的原始访问记录将自动清理，设为0则不自动清理"
+                },
+                {
+                    "name": "enable_region_stat",
+                    "title": "开启地域统计",
+                    "type": "switch",
+                    "value": "1",
+                    "tips": "开启后将解析访客IP归属地，需要IP归属地应用已配置"
+                }
+            ]
+        }
+    ],
+    "permissions": [
+        {
+            "code": "cmspro.sitestat.manage",
+            "name": "访问统计管理"
+        },
+        {
+            "code": "cmspro.sitestat.dashboard",
+            "name": "查看访问概览"
+        },
+        {
+            "code": "cmspro.sitestat.region",
+            "name": "查看地域分析"
+        },
+        {
+            "code": "cmspro.sitestat.source",
+            "name": "查看来源分析"
+        },
+        {
+            "code": "cmspro.sitestat.page",
+            "name": "查看页面统计"
+        },
+        {
+            "code": "cmspro.sitestat.device",
+            "name": "查看设备分析"
+        },
+        {
+            "code": "cmspro.sitestat.visitor",
+            "name": "查看访客明细"
+        },
+        {
+            "code": "cmspro.sitestat.spider",
+            "name": "查看蜘蛛统计"
+        },
+        {
+            "code": "cmspro.sitestat.settings",
+            "name": "统计设置"
+        }
+    ]
+}
