@@ -4,6 +4,7 @@ namespace App\Apps\CmsproSitestat\Services;
 
 use App\Apps\CmsproSitestat\Models\SpiderVisit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SpiderService
@@ -237,21 +238,30 @@ class SpiderService
     }
 
     /**
-     * 读取 IP 黑名单（每行一个 IP）
+     * 黑名单缓存时长（秒）
+     */
+    protected const BLOCKED_LIST_CACHE_TTL = 3600;
+
+    /**
+     * 读取 IP 黑名单（每行一个 IP，缓存 1 小时）
      */
     public function getBlockedIps(): array
     {
-        $str = \App\Models\ConfigItem::where('code', 'app_cmspro_sitestat_blocked_ips')->value('value') ?? '';
-        return array_values(array_filter(array_map('trim', explode("\n", $str))));
+        return Cache::remember('cmspro_sitestat_blocked_ips', self::BLOCKED_LIST_CACHE_TTL, function () {
+            $str = \App\Models\ConfigItem::where('code', 'app_cmspro_sitestat_blocked_ips')->value('value') ?? '';
+            return array_values(array_filter(array_map('trim', explode("\n", $str))));
+        });
     }
 
     /**
-     * 读取 UA 黑名单（每行一个 UA）
+     * 读取 UA 黑名单（每行一个 UA，缓存 1 小时）
      */
     public function getBlockedUas(): array
     {
-        $str = \App\Models\ConfigItem::where('code', 'app_cmspro_sitestat_blocked_uas')->value('value') ?? '';
-        return array_values(array_filter(array_map('trim', explode("\n", $str))));
+        return Cache::remember('cmspro_sitestat_blocked_uas', self::BLOCKED_LIST_CACHE_TTL, function () {
+            $str = \App\Models\ConfigItem::where('code', 'app_cmspro_sitestat_blocked_uas')->value('value') ?? '';
+            return array_values(array_filter(array_map('trim', explode("\n", $str))));
+        });
     }
 
     /**
@@ -334,7 +344,7 @@ class SpiderService
     }
 
     /**
-     * 保存黑名单列表（每行一个）
+     * 保存黑名单列表（每行一个），写入后清除对应缓存
      */
     protected function saveBlockedList(string $code, array $list): void
     {
@@ -352,6 +362,12 @@ class SpiderService
                 'type' => 'textarea',
             ]
         );
+
+        // 写入成功后清除对应缓存，确保后续读取拿到最新数据
+        $cacheKey = $code === 'app_cmspro_sitestat_blocked_ips'
+            ? 'cmspro_sitestat_blocked_ips'
+            : 'cmspro_sitestat_blocked_uas';
+        Cache::forget($cacheKey);
     }
 
     /**

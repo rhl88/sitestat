@@ -99,6 +99,7 @@
 
 - IP 黑名单按精确匹配拦截；UA 黑名单按子串匹配拦截（命中 UA 中包含该字符串即拦截）。
 - 黑名单数据存储于配置项 `app_cmspro_sitestat_blocked_ips` 与 `app_cmspro_sitestat_blocked_uas`（每行一个）。
+- 黑名单读取走缓存（`Cache::remember`，key 为 `cmspro_sitestat_blocked_ips` / `cmspro_sitestat_blocked_uas`，TTL 1 小时），避免每个蜘蛛请求重复查库；任何写入（添加/编辑/删除）均会在 `saveBlockedList` 中自动 `Cache::forget` 对应 key，确保即时生效。
 - 「最近访问记录」卡片右上角提供「黑名单管理」按钮，弹窗内支持：
   - **查询**：按 IP/UA 类型切换 + 关键词模糊查询
   - **添加**：手动输入 IP 或 UA 加入黑名单
@@ -346,3 +347,4 @@ blocked_spiders = Semrush,Ahrefs
 | 版本 | 日期 | 更新人 | 变更内容 |
 |------|------|--------|----------|
 | v1.0.0 | 2026-08-12 | 开发团队 | 初始版本 |
+| v1.0.1 | 2026-08-18 | 开发团队 | IP/UA 黑名单读取加 `Cache::remember` 缓存（1h TTL），写入时自动清缓存 |
