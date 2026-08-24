@@ -176,5 +176,17 @@
             "code": "cmspro.sitestat.settings",
             "name": "统计设置"
         }
+    ],
+    "runtime_files": [
+        {
+            "key": "robots_txt",
+            "name": "robots.txt 生成文件",
+            "dir": "public/robots.txt",
+            "type": "other",
+            "description": "由统计设置生成写入 public/robots.txt 的搜索引擎蜘蛛规则文件，删除后可从设置页重新生成",
+            "cleanable": false,
+            "strategy": "manual",
+            "protected": true
+        }
     ]
 }
