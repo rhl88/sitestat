@@ -39,7 +39,7 @@
             <div style="margin-bottom:15px;">
                 <p style="color:#666;margin-bottom:10px;">将以下代码添加到网站前端的页面中（建议放在 &lt;/head&gt; 标签前），即可开始采集访问数据。</p>
                 <div class="layui-input-inline" style="width:100%;">
-                    <textarea id="embedCode" class="layui-textarea" style="height:60px;background:#f8f8f8;resize:none;" readonly></textarea>
+                    <textarea id="embedCode" class="layui-textarea" style="height:60px;background:#f8f8f8;resize:none;" readonly>{{ $embedCode }}</textarea>
                 </div>
                 <button class="layui-btn layui-btn-sm" style="margin-top:8px;" id="btnCopy"><i class="fa fa-copy"></i> 复制代码</button>
             </div>
@@ -233,13 +233,6 @@ layui.use(['form', 'layer', 'jquery'], function(){
         $('#spiderCheckboxList').append(html);
         form.render('checkbox');
     }
-
-    // 加载JS SDK地址
-    $.get('/admin/cmspro/sitestat/api/js-sdk-url', function(res) {
-        if (res.code === 0) {
-            $('#embedCode').val(res.data.embed_code);
-        }
-    });
 
     // 加载设置
     $.get('/admin/cmspro/sitestat/api/settings', function(res) {

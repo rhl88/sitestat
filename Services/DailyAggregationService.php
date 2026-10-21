@@ -118,9 +118,13 @@ class DailyAggregationService
 
         foreach ($regions as $region) {
             DailyRegion::updateOrCreate(
-                ['stat_date' => $date, 'province' => $region->province, 'city' => $region->city],
                 [
-                    'country' => $region->country,
+                    'stat_date' => $date,
+                    'country' => $region->country ?? '',
+                    'province' => $region->province ?? '',
+                    'city' => $region->city ?? '',
+                ],
+                [
                     'pv' => $region->pv,
                     'uv' => $region->uv,
                 ]

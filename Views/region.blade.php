@@ -24,6 +24,7 @@
                 </div>
                 <div class="layui-input-inline" style="width:120px;">
                     <select id="groupBy">
+                        <option value="country">按国家</option>
                         <option value="province">按省份</option>
                         <option value="city">按城市</option>
                     </select>
@@ -54,15 +55,24 @@ layui.use(['table', 'laydate', 'jquery', 'form'], function(){
 
     function getColumns() {
         var groupBy = $('#groupBy').val();
+        if (groupBy === 'country') {
+            return [[
+                {field: 'country', title: '国家'},
+                {field: 'pv', title: 'PV', sort: true},
+                {field: 'uv', title: 'UV', sort: true}
+            ]];
+        }
         if (groupBy === 'city') {
             return [[
+                {field: 'country', title: '国家'},
                 {field: 'province', title: '省份'},
                 {field: 'city', title: '城市'},
-                   {field: 'pv', title: 'PV', sort: true},
+                {field: 'pv', title: 'PV', sort: true},
                 {field: 'uv', title: 'UV', sort: true}
             ]];
         }
         return [[
+            {field: 'country', title: '国家'},
             {field: 'province', title: '省份'},
             {field: 'pv', title: 'PV', sort: true},
             {field: 'uv', title: 'UV', sort: true}

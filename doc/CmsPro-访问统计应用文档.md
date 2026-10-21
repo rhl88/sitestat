@@ -1,6 +1,6 @@
 # CmsPro-访问统计应用文档
 
-> 版本：v1.0.0 | 创建日期：2026-08-12
+> 版本：v1.0.4 | 创建日期：2026-08-12
 > 适用系统：CmsPro v5.0.0+
 > 应用 ID：`cmspro.sitestat`
 
@@ -74,6 +74,8 @@
 - **上报字段**：`sid`、`url`、`path`、`title`、`referer`、`ua`、`screen`
 
 服务端采集接口 `POST /api/sitestat/collect` 返回 1x1 透明 GIF（`image/gif`，`Access-Control-Allow-Origin: *`），兼容跨域与传统统计方式。该接口公开访问并受 `throttle:120,1`（每分钟 120 次）限流保护。
+
+**输入净化**：采集接口对所有外部输入字段（`sid`、`url`、`path`、`title`、`referer`、`ua`、`screen`）统一净化——非 UTF-8 编码内容（如 GBK 编码页面经 `sendBeacon` 按页面文档编码上报的原始字节）自动转换为 UTF-8，残留非法字节被清除，并按字段长度上限截断。统计脚本嵌入 GBK/GB2312 等编码的站点时，访问记录仍可正常入库，不会触发 MySQL 1366（Incorrect string value）错误。
 
 ### 2.4 蜘蛛追踪与防护（SpiderTrackMiddleware）
 
@@ -157,6 +159,7 @@
 - **来源类型枚举**：`referer_type` 1=直接访问（含站内跳转，通过站点绑定域名判断）、2=搜索引擎（内置 11 个搜索引擎域名映射与关键词参数表）、3=外部链接
 - **IP 归属地解析**：仅在 `enable_region_stat=1` 且 IP 库已配置时调用 `IpLocationService->searchToArray()`，失败降级为空字段并记录 warning 日志，不影响主流程
 - **UA 解析**：`UaParserService` 内置 18 种浏览器、13 种操作系统、设备类型（mobile/tablet/desktop）与 33 种蜘蛛 UA 关键词映射，纯本地规则解析，无外部依赖
+- **输入净化**：采集接口对外部输入统一净化（UTF-8 校验 → GBK→UTF-8 转换 → 非法字节清除 → 按字段长度截断），保证统计脚本嵌入任意编码页面时访问记录均不因写库失败而丢失
 - **数据清理**：`data_retention_days` 控制原始访问记录保留天数（设为 0 不清理），聚合表数据永久保留
 - **日期格式**：模型 `$casts` 统一输出 `Y-m-d H:i:s`，符合 CmsPro 日期规范
 
@@ -340,6 +343,10 @@ blocked_spiders = Semrush,Ahrefs
 **Q6：采集接口报 429？**
 - `POST /api/sitestat/collect` 受每分钟 120 次限流保护；高流量站点建议改为抽样统计模式，或部署时调大限流阈值
 
+**Q7：线上日志出现「访问统计数据写入失败 / SQLSTATE[HY000] 1366 Incorrect string value」？**
+- 根因：统计脚本嵌入了 GBK/GB2312 等非 UTF-8 编码的站点页面，`sendBeacon` 按页面文档编码上报，title 等字段携带非 UTF-8 原始字节，直接写入 utf8mb4 表触发 MySQL 1366 错误，该次访问记录丢失
+- v1.0.4 起已修复：采集接口对外部输入统一净化（非 UTF-8 自动转 UTF-8、清除非法字节、按字段长度截断），升级到该版本及以上即可解决
+
 ---
 
 ## 更新日志
@@ -348,3 +355,6 @@ blocked_spiders = Semrush,Ahrefs
 |------|------|--------|----------|
 | v1.0.0 | 2026-08-12 | 开发团队 | 初始版本 |
 | v1.0.1 | 2026-08-18 | 开发团队 | IP/UA 黑名单读取加 `Cache::remember` 缓存（1h TTL），写入时自动清缓存 |
+| v1.0.2 | 2026-08-24 | 开发团队 | manifest 新增 `runtime_files` 运行时文件声明（robots.txt 生成文件标记为保护文件） |
+| v1.0.3 | 2026-10-18 | 开发团队 | 访客地域支持按国家维度统计：`daily_regions` 唯一索引加入 `country`，日聚合/报表/设置页配套调整（含升级脚本 `sql/V2026101801`） |
+| v1.0.4 | 2026-10-21 | 开发团队 | 采集接口统一净化外部输入：非 UTF-8（GBK 等）自动转 UTF-8、清除非法字节、按字段长度截断，修复统计脚本嵌入 GBK 编码页面时 MySQL 1366 报错导致访问记录丢失；新增采集编码净化测试（5 用例） |

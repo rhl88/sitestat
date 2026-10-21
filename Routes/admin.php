@@ -35,5 +35,4 @@ Route::prefix('api')->group(function () {
     Route::get('/spider/blocked-list', [SpiderController::class, 'apiBlockedList']);
     Route::get('/settings', [SettingsController::class, 'apiGetSettings']);
     Route::post('/settings', [SettingsController::class, 'apiSaveSettings']);
-    Route::get('/js-sdk-url', [SettingsController::class, 'apiJsSdkUrl']);
 });

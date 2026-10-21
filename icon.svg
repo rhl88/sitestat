@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="访问统计">
+    <title>访问统计</title>
+    <defs>
+        <!-- 主背景渐变：蓝 → 紫 -->
+        <linearGradient id="stBg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4F7CFF"/>
+            <stop offset="1" stop-color="#7A4DFF"/>
+        </linearGradient>
+        <!-- 左上角柔光，提升质感 -->
+        <radialGradient id="stGlow" cx="0.3" cy="0.24" r="0.78">
+            <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.38"/>
+            <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+        </radialGradient>
+        <!-- 柱体渐变：上亮下柔 -->
+        <linearGradient id="stBar" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFFFFF"/>
+            <stop offset="1" stop-color="#D8E2FF"/>
+        </linearGradient>
+    </defs>
+
+    <!-- 圆角底板 -->
+    <rect x="0" y="0" width="120" height="120" rx="27" fill="url(#stBg)"/>
+    <rect x="0" y="0" width="120" height="120" rx="27" fill="url(#stGlow)"/>
+
+    <!-- 柱状图：三根递增圆角柱 -->
+    <g fill="url(#stBar)">
+        <rect x="28" y="72" width="14" height="24" rx="7"/>
+        <rect x="53" y="56" width="14" height="40" rx="7"/>
+        <rect x="78" y="38" width="14" height="58" rx="7"/>
+    </g>
+
+    <!-- 趋势折线：上升走势 -->
+    <polyline points="35,66 60,50 85,32"
+              fill="none" stroke="#FFD166" stroke-width="4"
+              stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- 趋势终点数据点 -->
+    <circle cx="85" cy="32" r="5" fill="#FFD166"/>
+    <circle cx="85" cy="32" r="2" fill="#FFFFFF"/>
+</svg>

@@ -56,15 +56,21 @@ class CollectService
             return false;
         }
 
+        // 净化外部输入：统计脚本可能嵌入GBK等编码页面，sendBeacon按页面编码上报，
+        // 字段携带非UTF-8字节时直接入库会触发MySQL 1366错误，导致该次访问记录丢失
+        $path = $this->sanitizeText($request->input('path', ''), 255);
+        $ua = $this->sanitizeText($request->input('ua', $request->userAgent() ?? ''), 500);
+        $referer = $this->sanitizeText($request->input('referer', ''), 500);
+        $url = $this->sanitizeText($request->input('url', ''), 500);
+        $title = $this->sanitizeText($request->input('title', ''), 255);
+        $screen = $this->sanitizeText($request->input('screen', ''), 20);
+
         // 路径排除检查
-        $path = $request->input('path', '');
         if ($this->isExcludedPath($path)) {
             return false;
         }
 
         $ip = $request->ip();
-        $ua = $request->input('ua', $request->userAgent() ?? '');
-        $referer = $request->input('referer') ?? '';
 
         // 解析IP归属地
         $location = $this->resolveIpLocation($ip);
@@ -73,11 +79,10 @@ class CollectService
         $uaInfo = $this->uaParser->parse($ua);
 
         // 解析来源（传入当前页面URL用于判断站内跳转）
-        $currentPageUrl = $request->input('url', '');
-        $sourceInfo = $this->parseReferer($referer, $currentPageUrl);
+        $sourceInfo = $this->parseReferer($referer, $url);
 
         // 生成会话ID（基于IP+UA+日期，同一天同一设备视为同一会话）
-        $sessionId = $request->input('sid', '');
+        $sessionId = $this->sanitizeText($request->input('sid', ''), 64);
         if (empty($sessionId)) {
             $sessionId = md5($ip . $ua . date('Y-m-d'));
         }
@@ -90,19 +95,19 @@ class CollectService
                 'province' => $location['province'] ?? '',
                 'city' => $location['city'] ?? '',
                 'isp' => $location['isp'] ?? '',
-                'url' => $request->input('url', ''),
+                'url' => $url,
                 'path' => $path,
-                'title' => $request->input('title', ''),
+                'title' => $title,
                 'referer' => $referer,
                 'referer_domain' => $sourceInfo['domain'],
                 'referer_type' => $sourceInfo['type'],
                 'search_engine' => $sourceInfo['engine'],
                 'search_keyword' => $sourceInfo['keyword'],
-                'user_agent' => mb_substr($ua, 0, 500),
+                'user_agent' => $ua,
                 'browser' => $uaInfo['browser'],
                 'os' => $uaInfo['os'],
                 'device_type' => $uaInfo['device_type'],
-                'screen_resolution' => $request->input('screen', ''),
+                'screen_resolution' => $screen,
                 'status' => 1,
             ]);
 
@@ -114,6 +119,28 @@ class CollectService
             ]);
             return false;
         }
+    }
+
+    /**
+     * 净化外部输入：统一转换为UTF-8、清除非法字节并按字段长度截断
+     *
+     * 统计脚本可能嵌入GBK等编码的站点页面，sendBeacon按页面文档编码上报，
+     * 字段中会携带非UTF-8原始字节，直接写入utf8mb4表将触发MySQL 1366错误。
+     */
+    protected function sanitizeText(mixed $value, int $limit): string
+    {
+        // 非字符串输入（数组参数注入等）一律置空，避免TypeError
+        $value = is_string($value) ? $value : '';
+
+        if ($value !== '' && !mb_check_encoding($value, 'UTF-8')) {
+            // 非UTF-8（GBK/GB2312等编码）尝试转换为UTF-8
+            $value = mb_convert_encoding($value, 'UTF-8', 'GBK');
+        }
+
+        // 清除残留的非法UTF-8字节，确保任意输入均可安全入库
+        $value = mb_scrub($value);
+
+        return mb_substr($value, 0, $limit);
     }
 
     /**

@@ -96,6 +96,7 @@ layui.use(['table', 'laydate', 'jquery'], function(){
         limit: 20,
         cols: [[
             {field: 'ip', title: 'IP', width: 130},
+            {field: 'country', title: '国家', width: 100},
             {field: 'province', title: '省份', width: 100},
             {field: 'city', title: '城市', width: 100},
             {field: 'path', title: '页面', minWidth: 180, templet: '#urlTpl'},

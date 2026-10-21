@@ -188,27 +188,24 @@ class StatService
 
     /**
      * 获取地域统计数据
+     *
+     * @param string $groupBy 分组维度：country（按国家）/ province（按国家+省份）/ city（按国家+省份+城市）
      */
     public function getRegionStats(string $startDate, string $endDate, string $groupBy = 'province', int $page = 1, int $pageSize = 20): array
     {
+        $groupKeys = $this->resolveRegionGroupKeys($groupBy);
+
         $aggregateEndDate = $this->getAggregateEndDate($endDate);
         $today = Carbon::today()->toDateString();
 
         // 聚合表数据
         $aggregateData = collect();
         if ($startDate <= $aggregateEndDate) {
-            $query = DailyRegion::whereBetween('stat_date', [$startDate, $aggregateEndDate]);
-            if ($groupBy === 'province') {
-                $aggregateData = $query->select('province', DB::raw('SUM(pv) as pv'), DB::raw('SUM(uv) as uv'))
-                    ->groupBy('province')
-                    ->orderByDesc('pv')
-                    ->get();
-            } else {
-                $aggregateData = $query->select('province', 'city', DB::raw('SUM(pv) as pv'), DB::raw('SUM(uv) as uv'))
-                    ->groupBy('province', 'city')
-                    ->orderByDesc('pv')
-                    ->get();
-            }
+            $aggregateData = DailyRegion::whereBetween('stat_date', [$startDate, $aggregateEndDate])
+                ->select(array_merge($groupKeys, [DB::raw('SUM(pv) as pv'), DB::raw('SUM(uv) as uv')]))
+                ->groupBy($groupKeys)
+                ->orderByDesc('pv')
+                ->get();
         }
 
         // 获取聚合表中已有的日期，用于排除
@@ -222,19 +219,13 @@ class StatService
             if (!empty($existingDates)) {
                 $realtimeQuery->whereNotIn(DB::raw('DATE(create_time)'), $existingDates);
             }
-            if ($groupBy === 'province') {
-                $realtimeData = $realtimeQuery->select('province', DB::raw('COUNT(*) as pv'), DB::raw('COUNT(DISTINCT session_id) as uv'))
-                    ->groupBy('province')
-                    ->get();
-            } else {
-                $realtimeData = $realtimeQuery->select('province', 'city', DB::raw('COUNT(*) as pv'), DB::raw('COUNT(DISTINCT session_id) as uv'))
-                    ->groupBy('province', 'city')
-                    ->get();
-            }
+            $realtimeData = $realtimeQuery->select(array_merge($groupKeys, [DB::raw('COUNT(*) as pv'), DB::raw('COUNT(DISTINCT session_id) as uv')]))
+                ->groupBy($groupKeys)
+                ->get();
         }
 
         // 合并数据
-        $merged = $this->mergeAggregatedWithRealtime($aggregateData, $realtimeData, $groupBy === 'province' ? 'province' : ['province', 'city']);
+        $merged = $this->mergeAggregatedWithRealtime($aggregateData, $realtimeData, $groupKeys);
 
         // 按PV降序排序
         usort($merged, fn($a, $b) => $b['pv'] <=> $a['pv']);
@@ -248,6 +239,25 @@ class StatService
             'page' => $page,
             'page_size' => $pageSize,
         ];
+    }
+
+    /**
+     * 解析地域统计的分组字段
+     *
+     * 国家维度始终保留在分组键中：
+     * - country：仅按国家聚合（用于只解析到国家、无省份的 IP）
+     * - province：按 国家+省份 聚合，避免不同国家的同名省份互相混淆
+     * - city：按 国家+省份+城市 聚合
+     *
+     * @return array<int, string>
+     */
+    protected function resolveRegionGroupKeys(string $groupBy): array
+    {
+        return match ($groupBy) {
+            'country' => ['country'],
+            'city' => ['country', 'province', 'city'],
+            default => ['country', 'province'],
+        };
     }
 
     /**

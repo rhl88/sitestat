@@ -22,7 +22,11 @@ class SettingsController extends Controller
 
     public function index()
     {
-        return view('cmspro.sitestat::settings');
+        // 统计代码直接在服务端生成，随页面渲染输出，避免前端 AJAX 不稳定
+        $sdkUrl = url('/apps/cmspro.sitestat/js/sitestat.js');
+        $embedCode = '<script src="' . $sdkUrl . '"></script>';
+
+        return view('cmspro.sitestat::settings', compact('embedCode'));
     }
 
     public function apiGetSettings()
@@ -176,19 +180,5 @@ class SettingsController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
-    }
-
-    public function apiJsSdkUrl()
-    {
-        $url = url('/apps/cmspro.sitestat/js/sitestat.js');
-        $embedCode = '<script src="' . $url . '"></script>';
-
-        return response()->json([
-            'code' => 0,
-            'data' => [
-                'sdk_url' => $url,
-                'embed_code' => $embedCode,
-            ],
-        ]);
     }
 }
