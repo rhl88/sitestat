@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ asset('Admin/css/variables.css') }}">
     <link rel="stylesheet" href="{{ asset('Admin/css/reset.css') }}">
     <style>
+        .layui-form-label { white-space: nowrap; }
         .blocked-tag {
             display: inline-block;
             background: #fff1f0;
@@ -34,162 +35,175 @@
 <body>
 <div class="pear-container">
     <div class="layui-card">
-        <div class="layui-card-header">JS SDK 接入</div>
-        <div class="layui-card-body">
-            <div style="margin-bottom:15px;">
-                <p style="color:#666;margin-bottom:10px;">将以下代码添加到网站前端的页面中（建议放在 &lt;/head&gt; 标签前），即可开始采集访问数据。</p>
-                <div class="layui-input-inline" style="width:100%;">
-                    <textarea id="embedCode" class="layui-textarea" style="height:60px;background:#f8f8f8;resize:none;" readonly>{{ $embedCode }}</textarea>
-                </div>
-                <button class="layui-btn layui-btn-sm" style="margin-top:8px;" id="btnCopy"><i class="fa fa-copy"></i> 复制代码</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="layui-card" style="margin-top:15px;">
         <div class="layui-card-header">统计设置</div>
         <div class="layui-card-body">
-            <form class="layui-form" lay-filter="settingsForm">
-                <div class="layui-form-item">
-                    <label class="layui-form-label">统计模式</label>
-                    <div class="layui-input-block">
-                        <select name="track_mode" id="trackMode" lay-filter="trackMode">
-                            <option value="full">全量统计</option>
-                            <option value="sample">抽样统计</option>
-                        </select>
-                        <div class="layui-form-mid layui-word-aux">全量统计记录所有访问，抽样统计仅记录部分访问以降低服务器压力</div>
-                    </div>
-                </div>
+            <div class="layui-tab layui-tab-brief" lay-filter="settingsTab">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">接入代码</li>
+                    <li>统计设置</li>
+                    <li>蜘蛛管理</li>
+                    <li>黑名单管理</li>
+                </ul>
+                <div class="layui-tab-content">
 
-                <div class="layui-form-item" id="sampleRateRow" style="display:none;">
-                    <label class="layui-form-label">抽样率</label>
-                    <div class="layui-input-inline" style="width:120px;">
-                        <input type="number" name="sample_rate" id="sampleRate" class="layui-input" min="1" max="100" value="10">
+                    {{-- ========== Tab 1：接入代码 ========== --}}
+                    <div class="layui-tab-item layui-show">
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <p style="color:#666;margin-bottom:10px;">将以下代码添加到网站前端的页面中（建议放在 &lt;/head&gt; 标签前），即可开始采集访问数据。</p>
+                                <textarea id="embedCode" class="layui-textarea" style="height:60px;background:#f8f8f8;resize:none;" readonly>{{ $embedCode }}</textarea>
+                                <button type="button" class="layui-btn layui-btn-sm" style="margin-top:8px;" id="btnCopy"><i class="fa fa-copy"></i> 复制代码</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="layui-form-mid layui-word-aux">取值1-100，表示记录百分之几的访问</div>
-                </div>
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">排除路径</label>
-                    <div class="layui-input-block">
-                        <textarea name="exclude_paths" id="excludePaths" class="layui-textarea" style="height:80px;" placeholder="不统计的页面路径，每行一个，支持通配符&#10;例如：/admin/*&#10;/api/*"></textarea>
-                    </div>
-                </div>
+                    {{-- ========== Tab 2：统计设置 ========== --}}
+                    <div class="layui-tab-item">
+                        <form class="layui-form" lay-filter="settingsForm" onsubmit="return false;">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">统计模式</label>
+                                <div class="layui-input-block">
+                                    <div style="width:300px;">
+                                        <select name="track_mode" id="trackMode" lay-filter="trackMode">
+                                            <option value="full">全量统计</option>
+                                            <option value="sample">抽样统计</option>
+                                        </select>
+                                    </div>
+                                    <div class="layui-form-mid layui-word-aux">全量统计记录所有访问，抽样统计仅记录部分访问以降低服务器压力</div>
+                                </div>
+                            </div>
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">数据保留</label>
-                    <div class="layui-input-inline" style="width:120px;">
-                        <input type="number" name="data_retention_days" id="dataRetentionDays" class="layui-input" min="0" value="90">
-                    </div>
-                    <div class="layui-form-mid layui-word-aux">天，超过保留天数的原始访问记录将自动清理，设为0则不自动清理</div>
-                </div>
+                            <div class="layui-form-item" id="sampleRateRow" style="display:none;">
+                                <label class="layui-form-label">抽样率</label>
+                                <div class="layui-input-inline" style="width:120px;">
+                                    <input type="number" name="sample_rate" id="sampleRate" class="layui-input" min="1" max="100" value="10">
+                                </div>
+                                <div class="layui-form-mid layui-word-aux">取值1-100，表示记录百分之几的访问</div>
+                            </div>
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">地域统计</label>
-                    <div class="layui-input-block">
-                        <input type="checkbox" name="enable_region_stat" id="enableRegionStat" lay-skin="switch" lay-text="开启|关闭" checked>
-                        <div class="layui-form-mid layui-word-aux">开启后将解析访客IP归属地，需要IP归属地应用已配置</div>
-                    </div>
-                </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">排除路径</label>
+                                <div class="layui-input-block">
+                                    <textarea name="exclude_paths" id="excludePaths" class="layui-textarea" style="height:80px;" placeholder="不统计的页面路径，每行一个，支持通配符&#10;例如：/admin/*&#10;/api/*"></textarea>
+                                </div>
+                            </div>
 
-                <div class="layui-form-item">
-                    <div class="layui-input-block">
-                        <button class="layui-btn" lay-submit lay-filter="saveSettings"><i class="fa fa-save"></i> 保存设置</button>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">数据保留</label>
+                                <div class="layui-input-inline" style="width:120px;">
+                                    <input type="number" name="data_retention_days" id="dataRetentionDays" class="layui-input" min="0" value="90">
+                                </div>
+                                <div class="layui-form-mid layui-word-aux">天，超过保留天数的原始访问记录将自动清理，设为0则不自动清理</div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">地域统计</label>
+                                <div class="layui-input-block">
+                                    <input type="checkbox" name="enable_region_stat" id="enableRegionStat" lay-skin="switch" lay-text="开启|关闭" checked>
+                                    <div class="layui-form-mid layui-word-aux">开启后将解析访客IP归属地，需要IP归属地应用已配置</div>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button type="button" class="layui-btn" lay-submit lay-filter="saveSettings"><i class="fa fa-save"></i> 保存设置</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
+
+                    {{-- ========== Tab 3：蜘蛛管理 ========== --}}
+                    <div class="layui-tab-item">
+                        <form class="layui-form" lay-filter="spiderForm" onsubmit="return false;">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">蜘蛛跟踪</label>
+                                <div class="layui-input-block">
+                                    <input type="checkbox" name="spider_track_enabled" id="spiderTrackEnabled" lay-skin="switch" lay-text="开启|关闭" value="1">
+                                    <div class="layui-form-mid layui-word-aux">开启后系统会记录蜘蛛访问数据并在中间件中执行拦截规则</div>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">登录页面</label>
+                                <div class="layui-input-block">
+                                    <div style="width:300px;">
+                                        <select name="login_page_action" id="loginPageAction">
+                                            <option value="allow">允许访问（仅记录不拦截）</option>
+                                            <option value="block_404">返回 404 Not Found（迷惑蜘蛛）</option>
+                                            <option value="block_403">返回 403 Forbidden（禁止访问）</option>
+                                        </select>
+                                    </div>
+                                    <div class="layui-form-mid layui-word-aux">蜘蛛访问 /login /register /password 等页面时的处理方式</div>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Crawl-Delay</label>
+                                <div class="layui-input-inline" style="width:120px;">
+                                    <input type="number" name="crawl_delay" id="crawlDelay" class="layui-input" min="1" max="999" value="10">
+                                </div>
+                                <div class="layui-form-mid layui-word-aux">秒，响应头中告知蜘蛛的抓取间隔</div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">自定义排除路径</label>
+                                <div class="layui-input-block">
+                                    <textarea name="custom_exclude_paths" id="customExcludePaths" class="layui-textarea" style="height:80px;" placeholder="每行一条，支持通配符 *&#10;例如：/search*&#10;/sitemap*"></textarea>
+                                    <div class="layui-form-mid layui-word-aux">添加到 robots.txt 的 Disallow 规则，每行一条</div>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">屏蔽蜘蛛</label>
+                                <div class="layui-input-block" id="spiderCheckboxList" style="padding-top:6px;">
+                                    <div style="color:#999;margin-bottom:10px;">勾选的蜘蛛将被 robots.txt 禁止抓取全站，且中间件直接返回 403</div>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button type="button" class="layui-btn" lay-submit lay-filter="saveSpider"><i class="fa fa-save"></i> 保存设置</button>
+                                    <button type="button" class="layui-btn layui-btn-primary" id="btnPreviewRobots"><i class="fa fa-eye"></i> 预览 robots.txt</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    {{-- ========== Tab 4：黑名单管理 ========== --}}
+                    <div class="layui-tab-item">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">IP 黑名单</label>
+                            <div class="layui-input-block" id="blockedIpList" style="padding-top:6px;">
+                                <div style="color:#999;">暂无拉黑的 IP</div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">UA 黑名单</label>
+                            <div class="layui-input-block" id="blockedUaList" style="padding-top:6px;">
+                                <div style="color:#999;">暂无拉黑的 UA</div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <div style="color:#999;">被拉黑的 IP/UA 的蜘蛛访问将被中间件直接返回 403 拦截。可在蜘蛛统计页的最近访问记录中快速拉黑，也可在此处解除。</div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-            </form>
+            </div>
         </div>
     </div>
-
-    <div class="layui-card" style="margin-top:15px;">
-        <div class="layui-card-header">蜘蛛管理</div>
-        <div class="layui-card-body">
-            <form class="layui-form" lay-filter="spiderForm">
-                <div class="layui-form-item">
-                    <label class="layui-form-label">蜘蛛跟踪</label>
-                    <div class="layui-input-block">
-                        <input type="checkbox" name="spider_track_enabled" id="spiderTrackEnabled" lay-skin="switch" lay-text="开启|关闭" value="1">
-                        <div class="layui-form-mid layui-word-aux">开启后系统会记录蜘蛛访问数据并在中间件中执行拦截规则</div>
-                    </div>
-                </div>
-
-                <div class="layui-form-item">
-                    <label class="layui-form-label">登录页面</label>
-                    <div class="layui-input-block">
-                        <select name="login_page_action" id="loginPageAction">
-                            <option value="allow">允许访问（仅记录不拦截）</option>
-                            <option value="block_404">返回 404 Not Found（迷惑蜘蛛）</option>
-                            <option value="block_403">返回 403 Forbidden（禁止访问）</option>
-                        </select>
-                        <div class="layui-form-mid layui-word-aux">蜘蛛访问 /login /register /password 等页面时的处理方式</div>
-                    </div>
-                </div>
-
-                <div class="layui-form-item">
-                    <label class="layui-form-label">Crawl-Delay</label>
-                    <div class="layui-input-inline" style="width:120px;">
-                        <input type="number" name="crawl_delay" id="crawlDelay" class="layui-input" min="1" max="999" value="10">
-                    </div>
-                    <div class="layui-form-mid layui-word-aux">秒，响应头中告知蜘蛛的抓取间隔</div>
-                </div>
-
-                <div class="layui-form-item">
-                    <label class="layui-form-label">自定义排除路径</label>
-                    <div class="layui-input-block">
-                        <textarea name="custom_exclude_paths" id="customExcludePaths" class="layui-textarea" style="height:80px;" placeholder="每行一条，支持通配符 *&#10;例如：/search*&#10;/sitemap*"></textarea>
-                        <div class="layui-form-mid layui-word-aux">添加到 robots.txt 的 Disallow 规则，每行一条</div>
-                    </div>
-                </div>
-
-                <div class="layui-form-item layui-form-text">
-                    <label class="layui-form-label">屏蔽蜘蛛</label>
-                    <div class="layui-input-block" id="spiderCheckboxList" style="padding-top:6px;">
-                        <div style="color:#999;margin-bottom:10px;">勾选的蜘蛛将被 robots.txt 禁止抓取全站，且中间件直接返回 403</div>
-                    </div>
-                </div>
-
-                <div class="layui-form-item">
-                    <div class="layui-input-block">
-                        <button class="layui-btn" lay-submit lay-filter="saveSpider"><i class="fa fa-save"></i> 保存设置</button>
-                        <button class="layui-btn layui-btn-primary" id="btnPreviewRobots" type="button"><i class="fa fa-eye"></i> 预览 robots.txt</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    <div class="layui-card" style="margin-top:15px;">
-        <div class="layui-card-header">黑名单管理</div>
-        <div class="layui-card-body">
-            <div class="layui-form-item">
-                <label class="layui-form-label">IP 黑名单</label>
-                <div class="layui-input-block" id="blockedIpList" style="padding-top:6px;">
-                    <div style="color:#999;">暂无拉黑的 IP</div>
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">UA 黑名单</label>
-                <div class="layui-input-block" id="blockedUaList" style="padding-top:6px;">
-                    <div style="color:#999;">暂无拉黑的 UA</div>
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <div class="layui-input-block">
-                    <div style="color:#999;">被拉黑的 IP/UA 的蜘蛛访问将被中间件直接返回 403 拦截。可在蜘蛛统计页的最近访问记录中快速拉黑，也可在此处解除。</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="robotsPreviewDialog" style="display:none;">
-    <pre id="robotsPreviewContent" style="padding:15px;margin:0;background:#f8f8f8;border:1px solid #e6e6e6;border-radius:4px;font-family:Consolas,monospace;font-size:13px;line-height:1.8;white-space:pre-wrap;max-height:400px;overflow-y:auto;"></pre>
 </div>
 
 <script src="{{ asset('CmsProUi/component/layui/layui.js') }}"></script>
 <script src="{{ asset('CmsProUi/component/pear/pear.js') }}"></script>
 <script>
-layui.use(['form', 'layer', 'jquery'], function(){
+layui.use(['form', 'layer', 'jquery', 'element'], function(){
     var form = layui.form;
     var layer = layui.layer;
     var $ = layui.jquery;
+    var element = layui.element;
 
     // 已知蜘蛛列表
     var SPIDERS = [
@@ -277,6 +291,13 @@ layui.use(['form', 'layer', 'jquery'], function(){
         } else {
             $('#sampleRateRow').hide();
         }
+    });
+
+    // Tab 切换后重新渲染表单组件，避免非当前 Tab 内元素在隐藏状态下渲染导致的尺寸异常
+    element.on('tab(settingsTab)', function() {
+        setTimeout(function() {
+            form.render();
+        }, 50);
     });
 
     // 保存设置
@@ -453,3 +474,6 @@ layui.use(['form', 'layer', 'jquery'], function(){
 
     loadBlockedList();
 });
+</script>
+</body>
+</html>

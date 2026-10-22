@@ -272,6 +272,8 @@ JS 统计 SDK 静态资源，通过 `SettingsController::apiJsSdkUrl()` 获取�
 
 ### 6.2 基础统计配置（统计设置页）
 
+> 统计设置页（`/admin/cmspro/sitestat/settings`）按功能分为 4 个选项卡：**接入代码**（统计代码展示与复制）、**统计设置**（下表基础配置项）、**蜘蛛管理**（6.3 节蜘蛛配置项与 robots.txt 预览）、**黑名单管理**（IP/UA 黑名单维护）。保存按钮通过 AJAX POST 提交至 `/admin/cmspro/sitestat/api/settings`。
+
 | 配置项 code | 说明 | 类型 | 默认值 | 取值范围/说明 |
 |-------------|------|------|--------|---------------|
 | `track_mode` | 统计模式 | select | `full` | `full`=全量统计；`sample`=抽样统计 |
