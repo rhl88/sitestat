@@ -2,6 +2,7 @@
 
 namespace App\Apps\CmsproSitestat\Services;
 
+use App\Apps\CmsproIplocation\Services\IpLocationService;
 use App\Apps\CmsproSitestat\Models\SpiderVisit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -174,12 +175,83 @@ class SpiderService
         }
         unset($item);
 
+        // 附加 IP 归属地：按当前页 IP 去重后实时查询一次，避免逐条重复解析
+        $ipRegions = $this->resolveIpRegions(array_column($list, 'ip'));
+        foreach ($list as &$item) {
+            $item['region'] = $ipRegions[$item['ip']] ?? '';
+        }
+        unset($item);
+
         return [
             'total' => $total,
             'list' => $list,
             'page' => $page,
             'page_size' => $pageSize,
         ];
+    }
+
+    /**
+     * 批量解析 IP 归属地（同一 IP 只查一次）
+     *
+     * IP 归属地应用未安装、未配置 IP 库或解析失败时返回空数组，调用方按空字符串展示。
+     *
+     * @param  array<int, string> $ips
+     * @return array<string, string> IP => 归属地文本（如「中国 广东 深圳」）
+     */
+    protected function resolveIpRegions(array $ips): array
+    {
+        $ips = array_values(array_unique(array_filter($ips, fn ($ip) => !empty($ip))));
+        if (empty($ips)) {
+            return [];
+        }
+
+        try {
+            $ipService = app(IpLocationService::class);
+            if (!$ipService->isConfigured()) {
+                return [];
+            }
+        } catch (\Throwable $e) {
+            Log::warning('蜘蛛访问记录 IP 归属地服务不可用', [
+                'app' => 'cmspro.sitestat',
+                'error' => $e->getMessage(),
+            ]);
+            return [];
+        }
+
+        $regions = [];
+        foreach ($ips as $ip) {
+            try {
+                $regions[$ip] = $this->formatRegion($ipService->searchToArray($ip));
+            } catch (\Throwable $e) {
+                $regions[$ip] = '';
+            }
+        }
+
+        return $regions;
+    }
+
+    /**
+     * 拼接归属地展示文本：国家 + 省份 + 城市，自动去重（如「北京 / 北京市」只保留「北京市」）
+     */
+    protected function formatRegion(array $location): string
+    {
+        $parts = [];
+        foreach (['country', 'province', 'city'] as $key) {
+            $value = trim((string) ($location[$key] ?? ''));
+            if ($value === '') {
+                continue;
+            }
+            // 城市已包含省份信息时（北京 / 北京市），去掉省份避免重复
+            if ($key === 'city' && !empty($parts) && str_starts_with($value, (string) end($parts))) {
+                array_pop($parts);
+            }
+            if (in_array($value, $parts, true)) {
+                continue;
+            }
+            $parts[] = $value;
+        }
+
+        return implode(' ', $parts);
     }
 
     /**

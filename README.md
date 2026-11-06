@@ -1,6 +1,6 @@
 # 访问统计 应用文档
 
-> 应用ID：`cmspro.sitestat` | 文档版本：1.0.4 | 应用版本：1.0.4 | 依赖：PHP ≥ 8.3, CmsPro ≥ 5.0.0
+> 应用ID：`cmspro.sitestat` | 文档版本：1.0.5 | 应用版本：1.0.5 | 依赖：PHP ≥ 8.3, CmsPro ≥ 5.0.0
 
 - 官方地址：https://www.cmspro.cn/apps/cmspro.sitestat
 - 本应用基于 CMSPRO 运行，请先安装 [CMSPRO](https://www.cmspro.cn/help/2)
@@ -30,7 +30,7 @@ CmsproSitestat/
 ├── Services/
 │   ├── CollectService.php              # 采集入库（抽样/路径排除/地域/UA/来源解析/输入净化）
 │   ├── DailyAggregationService.php     # 每日聚合
-│   ├── SpiderService.php               # 蜘蛛记录
+│   ├── SpiderService.php               # 蜘蛛记录与访问明细 IP 归属地解析
 │   ├── StatService.php                 # 报表查询（聚合表+实时补全）
 │   └── UaParserService.php             # UA 本地解析
 ├── Migrations/                         # 应用表迁移（app_cmspro_sitestat_ 前缀）

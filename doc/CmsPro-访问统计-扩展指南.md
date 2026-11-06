@@ -31,7 +31,7 @@
 |--------|----------|------|
 | `CollectService` | `App\Apps\CmsproSitestat\Services\CollectService` | 采集数据处理（抽样、排除、IP 解析、UA 解析、来源解析、入库） |
 | `StatService` | `App\Apps\CmsproSitestat\Services\StatService` | 统计报表查询（概览、地域、来源、页面、设备、访客明细、数据清理） |
-| `SpiderService` | `App\Apps\CmsproSitestat\Services\SpiderService` | 蜘蛛采集、蜘蛛统计、频率控制、URL 去噪 |
+| `SpiderService` | `App\Apps\CmsproSitestat\Services\SpiderService` | 蜘蛛采集、蜘蛛统计、频率控制、URL 去噪、访问记录 IP 归属地解析 |
 | `DailyAggregationService` | `App\Apps\CmsproSitestat\Services\DailyAggregationService` | 日聚合（将原始数据聚合到日统计表） |
 | `UaParserService` | `App\Apps\CmsproSitestat\Services\UaParserService` | UA 解析（浏览器/操作系统/设备类型/蜘蛛识别） |
 
@@ -61,7 +61,7 @@
 |------|------|------|
 | `collectFromRequest` | `collectFromRequest(Request $request): bool` | 从请求采集蜘蛛访问记录 |
 | `getSpiderOverview` | `getSpiderOverview(string $startDate, string $endDate): array` | 蜘蛛统计概览 |
-| `getSpiderVisitList` | `getSpiderVisitList(string $startDate, string $endDate, int $page = 1, int $pageSize = 20, ?string $spiderName = null): array` | 蜘蛛访问明细 |
+| `getSpiderVisitList` | `getSpiderVisitList(string $startDate, string $endDate, int $page = 1, int $pageSize = 20, ?string $spiderName = null): array` | 蜘蛛访问明细（每条记录附带 `region` IP 归属地文本） |
 | `cleanExpiredVisits` | `cleanExpiredVisits(): int` | 清理过期蜘蛛访问记录 |
 | `detectSpider` | `detectSpider(string $ua): string` | 识别 UA 是否为蜘蛛，返回蜘蛛名称（非蜘蛛返回空字符串） |
 | `isRateLimited` | `isRateLimited(string $spiderName, string $ip): bool` | 频率控制：同一蜘蛛/IP 在时间窗口内是否超限 |

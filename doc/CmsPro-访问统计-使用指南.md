@@ -50,7 +50,7 @@
 | 页面统计 | `/admin/cmspro/sitestat/page` | 页面热度排行（按路径/标题统计 PV/UV） |
 | 设备分析 | `/admin/cmspro/sitestat/device` | 浏览器、操作系统、设备类型、屏幕分辨率分布 |
 | 访客明细 | `/admin/cmspro/sitestat/visitor` | 原始访问记录明细列表 |
-| 蜘蛛统计 | `/admin/cmspro/sitestat/spider` | 蜘蛛访问总览、蜘蛛类型分布、访问趋势、访问明细 |
+| 蜘蛛统计 | `/admin/cmspro/sitestat/spider` | 「蜘蛛统计」Tab（默认）：蜘蛛访问总览、类型分布、访问趋势、蜘蛛排行；「访问记录」Tab：访问明细，IP 右侧「地区」列展示归属地 |
 | 统计设置 | `/admin/cmspro/sitestat/settings` | 统计模式、抽样率、排除路径、数据保留天数、地域统计开关、蜘蛛管理 |
 
 ### 3.2 用户端/前端验证（埋点采集）
@@ -79,7 +79,7 @@
 | GET | `/api/device` | 设备分析 |
 | GET | `/api/visitor` | 访客明细 |
 | GET | `/api/spider` | 蜘蛛统计概览 |
-| GET | `/api/spider/visits` | 蜘蛛访问明细 |
+| GET | `/api/spider/visits` | 蜘蛛访问明细（每条记录含 `region` IP 归属地文本） |
 | GET | `/api/settings` | 获取统计设置 |
 | POST | `/api/settings` | 保存统计设置（含蜘蛛字段时自动重新生成 robots.txt） |
 | GET | `/api/js-sdk-url` | 获取 JS SDK 地址与嵌入代码 |

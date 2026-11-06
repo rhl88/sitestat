@@ -52,46 +52,54 @@
             </div>
         </div>
         <div class="layui-card-body">
-            <div class="layui-row layui-col-space15">
-                <div class="layui-col-md6">
-                    <div class="layui-card">
-                        <div class="layui-card-header">蜘蛛访问趋势</div>
-                        <div class="layui-card-body">
-                            <div id="trendChart" style="height:300px;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="layui-col-md6">
-                    <div class="layui-card">
-                        <div class="layui-card-header">蜘蛛类型分布</div>
-                        <div class="layui-card-body">
-                            <div id="pieChart" style="height:300px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="layui-tab layui-tab-brief" lay-filter="spiderTab">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">蜘蛛统计</li>
+                    <li>访问记录</li>
+                </ul>
+                <div class="layui-tab-content">
 
-            <div class="layui-card" style="margin-top:15px;">
-                <div class="layui-card-header">蜘蛛排行</div>
-                <div class="layui-card-body">
-                    <table id="spiderRankTable" lay-filter="spiderRankTable"></table>
-                </div>
-            </div>
-
-            <div class="layui-card" style="margin-top:15px;">
-                <div class="layui-card-header">
-                    <span>最近访问记录</span>
-                    <div style="float:right;">
-                        <div class="layui-input-inline" style="width:160px;">
-                            <select id="spiderFilter" class="layui-input">
-                                <option value="">全部蜘蛛</option>
-                            </select>
+                    {{-- ========== Tab 1：蜘蛛统计（默认打开） ========== --}}
+                    <div class="layui-tab-item layui-show">
+                        <div class="layui-row layui-col-space15">
+                            <div class="layui-col-md6">
+                                <div class="layui-card">
+                                    <div class="layui-card-header">蜘蛛访问趋势</div>
+                                    <div class="layui-card-body">
+                                        <div id="trendChart" style="height:300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-col-md6">
+                                <div class="layui-card">
+                                    <div class="layui-card-header">蜘蛛类型分布</div>
+                                    <div class="layui-card-body">
+                                        <div id="pieChart" style="height:300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <button class="layui-btn layui-btn-sm layui-btn-primary" id="btnBlockManage"><i class="fa fa-ban"></i> 黑名单管理</button>
+
+                        <div class="layui-card" style="margin-top:15px;">
+                            <div class="layui-card-header">蜘蛛排行</div>
+                            <div class="layui-card-body">
+                                <table id="spiderRankTable" lay-filter="spiderRankTable"></table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="layui-card-body">
-                    <table id="spiderVisitTable" lay-filter="spiderVisitTable"></table>
+
+                    {{-- ========== Tab 2：访问记录 ========== --}}
+                    <div class="layui-tab-item">
+                        <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;">
+                            <div style="width:160px;">
+                                <select id="spiderFilter" class="layui-input">
+                                    <option value="">全部蜘蛛</option>
+                                </select>
+                            </div>
+                            <button class="layui-btn layui-btn-sm layui-btn-primary" id="btnBlockManage" style="margin-left:8px;"><i class="fa fa-ban"></i> 黑名单管理</button>
+                        </div>
+                        <table id="spiderVisitTable" lay-filter="spiderVisitTable"></table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -123,6 +131,16 @@
     <span class="block-value">{{ d.ip }}</span>
     <button class="layui-btn layui-btn-xs layui-btn-danger block-btn" data-type="ip" data-value="{{ d.ip }}"><i class="fa fa-ban"></i> 拉黑</button>
 </div>
+@endverbatim
+</script>
+
+<script type="text/html" id="regionTpl">
+@verbatim
+{{# if(d.region){ }}
+<span>{{ d.region }}</span>
+{{# } else { }}
+<span style="color:#999;">-</span>
+{{# } }}
 @endverbatim
 </script>
 
@@ -166,10 +184,11 @@
     </div>
 </div>
 <script>
-layui.use(['table', 'laydate', 'jquery', 'layer'], function(){
+layui.use(['table', 'laydate', 'jquery', 'layer', 'element'], function(){
     var table = layui.table;
     var laydate = layui.laydate;
     var layer = layui.layer;
+    var element = layui.element;
     var $ = layui.jquery;
 
     $.ajaxSetup({
@@ -266,7 +285,7 @@ layui.use(['table', 'laydate', 'jquery', 'layer'], function(){
 
     loadData();
 
-    // 最近访问记录表格只渲染一次（后端分页）
+    // 访问记录表格只渲染一次（后端分页）
     table.render({
         elem: '#spiderVisitTable',
         url: '/admin/cmspro/sitestat/api/spider/visits',
@@ -281,6 +300,7 @@ layui.use(['table', 'laydate', 'jquery', 'layer'], function(){
         cols: [[
             {field: 'spider_name', title: '蜘蛛', templet: '#spiderNameTpl'},
             {field: 'ip', title: 'IP', templet: '#ipTpl'},
+            {field: 'region', title: '地区', width: 160, templet: '#regionTpl'},
             {field: 'path', title: '页面', templet: '#urlTpl'},
             {field: 'user_agent', title: 'UA', templet: '#uaTpl'},
             {field: 'create_time', title: '访问时间'}
@@ -292,6 +312,15 @@ layui.use(['table', 'laydate', 'jquery', 'layer'], function(){
                 count: res.data.total,
                 data: res.data.list
             };
+        }
+    });
+
+    // 表格在隐藏的 Tab 内渲染时宽度为 0，切换到「访问记录」时重新计算列宽
+    element.on('tab(spiderTab)', function(data) {
+        if (data.index === 1) {
+            setTimeout(function() {
+                table.resize('spiderVisitTable');
+            }, 50);
         }
     });
 

@@ -2,7 +2,7 @@
     "id": "cmspro.sitestat",
     "name": "访问统计",
     "description": "网站访问统计应用，支持PV/UV统计、IP地域分布、来源分析、页面热度、设备浏览器统计、蜘蛛爬虫追踪",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "author": "CmsPro",
     "icon": "fa fa-bar-chart",
     "require": {

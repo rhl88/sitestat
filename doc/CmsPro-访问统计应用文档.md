@@ -1,6 +1,6 @@
 # CmsPro-访问统计应用文档
 
-> 版本：v1.0.4 | 创建日期：2026-08-12
+> 版本：v1.0.5 | 创建日期：2026-08-12
 > 适用系统：CmsPro v5.0.0+
 > 应用 ID：`cmspro.sitestat`
 
@@ -44,7 +44,7 @@
 | 页面统计 | `/admin/cmspro/sitestat/page` | 页面热度排行（按路径/标题统计 PV/UV） |
 | 设备分析 | `/admin/cmspro/sitestat/device` | 浏览器、操作系统、设备类型、屏幕分辨率分布 |
 | 访客明细 | `/admin/cmspro/sitestat/visitor` | 原始访问记录明细列表 |
-| 蜘蛛统计 | `/admin/cmspro/sitestat/spider` | 蜘蛛访问总览、蜘蛛类型分布、访问趋势、访问明细 |
+| 蜘蛛统计 | `/admin/cmspro/sitestat/spider` | 「蜘蛛统计」Tab：蜘蛛访问总览、蜘蛛类型分布、访问趋势、蜘蛛排行；「访问记录」Tab：蜘蛛访问明细（含 IP 地区） |
 | 统计设置 | `/admin/cmspro/sitestat/settings` | 统计模式、抽样率、排除路径、数据保留天数、地域统计开关、蜘蛛管理 |
 
 ### 2.2 操作流程
@@ -95,14 +95,25 @@
 
 同时在「统计设置」中配置蜘蛛相关参数后，会自动生成 `public/robots.txt`（含被屏蔽蜘蛛的专用 `User-agent`/`Disallow`/`Crawl-Delay: 30` 规则、默认 `Disallow` 路径、自定义排除路径与通用 `Crawl-Delay`）。
 
+#### 页面结构（蜘蛛统计页双 Tab）
+
+「蜘蛛统计」页按功能拆分为两个 Tab：
+
+| Tab | 内容 |
+|-----|------|
+| **蜘蛛统计**（默认打开） | 蜘蛛访问趋势图、蜘蛛类型分布饼图、蜘蛛排行表 |
+| **访问记录** | 蜘蛛访问明细表格（蜘蛛 / IP / 地区 / 页面 / UA / 访问时间），右上角提供蜘蛛筛选下拉框与「黑名单管理」按钮 |
+
+「地区」列位于 IP 列右侧，展示该 IP 的归属地（国家 + 省份 + 城市，重复项自动合并，如直辖市的「北京 / 北京市」只显示「北京市」）。归属地由依赖应用 `cmspro.iplocation` 的 `IpLocationService` **实时解析**，在列表分页时对当前页 IP 去重后逐条查询（同一 IP 一页只查一次），`spider_visits` 表不存储归属地字段，因此历史记录同样可显示地区。IP 库未配置或解析不到时该列显示 `-`。
+
 #### IP / UA 拉黑
 
-在「蜘蛛统计」页的「最近访问记录」表格中，将鼠标悬停到某行的 **IP 列** 或 **UA 列** 会显示「拉黑」按钮（按钮固定在单元格右侧，不受长文本影响），点击即可将该 IP 或 UA 加入黑名单。被拉黑的 IP/UA 的蜘蛛访问将被中间件直接返回 403 拦截。
+在「蜘蛛统计」页「访问记录」Tab 的明细表格中，将鼠标悬停到某行的 **IP 列** 或 **UA 列** 会显示「拉黑」按钮（按钮固定在单元格右侧，不受长文本影响），点击即可将该 IP 或 UA 加入黑名单。被拉黑的 IP/UA 的蜘蛛访问将被中间件直接返回 403 拦截。
 
 - IP 黑名单按精确匹配拦截；UA 黑名单按子串匹配拦截（命中 UA 中包含该字符串即拦截）。
 - 黑名单数据存储于配置项 `app_cmspro_sitestat_blocked_ips` 与 `app_cmspro_sitestat_blocked_uas`（每行一个）。
 - 黑名单读取走缓存（`Cache::remember`，key 为 `cmspro_sitestat_blocked_ips` / `cmspro_sitestat_blocked_uas`，TTL 1 小时），避免每个蜘蛛请求重复查库；任何写入（添加/编辑/删除）均会在 `saveBlockedList` 中自动 `Cache::forget` 对应 key，确保即时生效。
-- 「最近访问记录」卡片右上角提供「黑名单管理」按钮，弹窗内支持：
+- 「访问记录」Tab 右上角提供「黑名单管理」按钮，弹窗内支持：
   - **查询**：按 IP/UA 类型切换 + 关键词模糊查询
   - **添加**：手动输入 IP 或 UA 加入黑名单
   - **编辑**：修改黑名单中的 IP/UA 值
@@ -220,7 +231,7 @@ JS 统计 SDK 静态资源，通过 `SettingsController::apiJsSdkUrl()` 获取�
 | GET | `/api/device` | DeviceController::apiDevice | start_date、end_date | `browsers[]`、`os[]`、`device_types[]`、`resolutions[]`（前10） |
 | GET | `/api/visitor` | VisitorController::apiVisitor | start_date、end_date（默认近 7 天）、page、limit | `total`、`list[]`（原始访问记录）、分页信息 |
 | GET | `/api/spider` | SpiderController::apiSpider | start_date、end_date | `total_visits`、`by_spider[]`、`daily_trend[]`、`recent_visits[]`（前50） |
-| GET | `/api/spider/visits` | SpiderController::apiSpiderVisits | start_date、end_date（默认近 7 天）、spider_name、page、limit | `total`、`list[]`、分页信息 |
+| GET | `/api/spider/visits` | SpiderController::apiSpiderVisits | start_date、end_date（默认近 7 天）、spider_name、page、limit | `total`、`list[]`（含 `region` IP 归属地文本）、分页信息 |
 | POST | `/api/spider/block` | SpiderController::apiBlock | type（ip/ua）、value | `{code:0, message}`；将 IP/UA 加入黑名单 |
 | POST | `/api/spider/unblock` | SpiderController::apiUnblock | type（ip/ua）、value | `{code:0, message}`；从黑名单移除 |
 | GET | `/api/spider/blocked-list` | SpiderController::apiBlockedList | - | `{code:0, data:{ips[], uas[]}}` |
@@ -360,3 +371,4 @@ blocked_spiders = Semrush,Ahrefs
 | v1.0.2 | 2026-08-24 | 开发团队 | manifest 新增 `runtime_files` 运行时文件声明（robots.txt 生成文件标记为保护文件） |
 | v1.0.3 | 2026-10-18 | 开发团队 | 访客地域支持按国家维度统计：`daily_regions` 唯一索引加入 `country`，日聚合/报表/设置页配套调整（含升级脚本 `sql/V2026101801`） |
 | v1.0.4 | 2026-10-21 | 开发团队 | 采集接口统一净化外部输入：非 UTF-8（GBK 等）自动转 UTF-8、清除非法字节、按字段长度截断，修复统计脚本嵌入 GBK 编码页面时 MySQL 1366 报错导致访问记录丢失；新增采集编码净化测试（5 用例） |
+| v1.0.5 | 2026-11-06 | 开发团队 | 蜘蛛统计页拆分为「蜘蛛统计」（默认）与「访问记录」两个 Tab；访问记录 IP 列右侧新增「地区」列，经 `IpLocationService` 按页去重实时解析归属地（不新增表字段，历史记录同样生效）；新增访问记录地区测试（6 用例） |
