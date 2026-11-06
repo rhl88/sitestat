@@ -1,6 +1,6 @@
 # 访问统计 应用文档
 
-> 应用ID：`cmspro.sitestat` | 文档版本：1.0.5 | 应用版本：1.0.5 | 依赖：PHP ≥ 8.3, CmsPro ≥ 5.0.0
+> 应用ID：`cmspro.sitestat` | 文档版本：1.1.0 | 应用版本：1.0.5 | 依赖：PHP ≥ 8.3, CmsPro ≥ 5.0.0
 
 - 官方地址：https://www.cmspro.cn/apps/cmspro.sitestat
 - 本应用基于 CMSPRO 运行，请先安装 [CMSPRO](https://www.cmspro.cn/help/2)
@@ -15,7 +15,27 @@ CmsPro 自研的网站访问统计分析应用，为站点提供全面的访问�
 - **数据架构**：原始访问表 + 5 张日聚合表（定时任务每日聚合与清理），聚合表优先、实时补全，保证大数据量报表性能
 - **依赖应用**：`cmspro.iplocation`（IP 归属地解析；未配置时地域字段为空，不影响其他统计）
 
-## 2. 目录结构
+## 2. 应用截图
+
+> 截图来源：[官方应用页 · cmspro.sitestat](https://www.cmspro.cn/apps/cmspro.sitestat)（官网截图版本 v1.0.4，应用页当前版本 v1.0.5）。每次发布与更新必须核对本节截图与官网「应用截图」是否一致，不一致时以官网为准同步更新。
+
+![应用截图 1](https://www.cmspro.cn/uploads/2026/11/06/fjzQGHtoNUzQQMhSG8lF7hFMlqjoxWTH2azTyIYW.png)
+
+![应用截图 2](https://www.cmspro.cn/uploads/2026/11/06/5QCGSKHI91GDqlIpIYOI5mYyr8nyMKNxX1Uedbn2.png)
+
+![应用截图 3](https://www.cmspro.cn/uploads/2026/11/06/OUepfoRYtYsyqQ6lUztqhryICUKKgp6XKiZMonNF.png)
+
+![应用截图 4](https://www.cmspro.cn/uploads/2026/11/06/WyzeHsV75Y8eKB3tdcGEzP54ts0kSp7BVVVaIiBJ.png)
+
+![应用截图 5](https://www.cmspro.cn/uploads/2026/11/06/oAYYVysQ57y693aaBTOtksFNsBvUTqBHzu1AF3gG.png)
+
+![应用截图 6](https://www.cmspro.cn/uploads/2026/11/06/f6qznppaU5KM123PhgPViHnmnSU5pdCde308laxF.png)
+
+![应用截图 7](https://www.cmspro.cn/uploads/2026/11/06/yDM8iMAgk2ZP49v6bnjTTsVsmkNxsV5nCqnol98G.png)
+
+![应用截图 8](https://www.cmspro.cn/uploads/2026/11/06/Zmjg6COvc5l0FR1j7j3wzfyv9wX9vDEHL4F00VDv.png)
+
+## 3. 目录结构
 
 ```
 CmsproSitestat/
@@ -42,10 +62,21 @@ CmsproSitestat/
 └── doc/                                # 应用文档
 ```
 
-## 3. 应用文档
+## 4. 应用文档
 
 | 文档 | 说明 |
 |------|------|
 | [CmsPro-访问统计应用文档.md](doc/CmsPro-访问统计应用文档.md) | 功能、架构、接口、配置、FAQ |
 | [CmsPro-访问统计-使用指南.md](doc/CmsPro-访问统计-使用指南.md) | 安装、配置、功能验证指南 |
 | [CmsPro-访问统计-扩展指南.md](doc/CmsPro-访问统计-扩展指南.md) | Service 调用等扩展接口说明 |
+
+## 5. 安装与验证
+
+通过 CmsPro 应用管理安装后，在「统计设置」页按需配置统计模式、抽样率、排除路径与数据保留天数；前台页面通过统计 SDK 上报访问数据，报表在「访问概览」等页面查看。
+
+```bash
+# 在 code 目录执行（应用级测试单独运行，不纳入框架回归）
+php artisan test app/Apps/CmsproSitestat/Tests
+
+# 结果：12 passed (43 assertions)
+```
