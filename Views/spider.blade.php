@@ -34,6 +34,20 @@
             color: #333;
         }
         .block-item-ops { flex-shrink: 0; }
+        /* Tab 标题行右侧的「访问记录」专属工具栏，仅在该 Tab 激活时显示 */
+        .spider-tabs { position: relative; }
+        .spider-tab-toolbar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 11;
+            height: 40px;
+            display: none;
+            align-items: center;
+        }
+        .spider-tab-toolbar.is-show { display: flex; }
+        .spider-tab-toolbar .spider-tab-filter { width: 160px; margin-right: 8px; }
+        .spider-tab-toolbar .spider-tab-filter .layui-input { height: 30px; line-height: 30px; }
     </style>
 </head>
 <body>
@@ -52,11 +66,20 @@
             </div>
         </div>
         <div class="layui-card-body">
-            <div class="layui-tab layui-tab-brief" lay-filter="spiderTab">
+            <div class="layui-tab layui-tab-brief spider-tabs" lay-filter="spiderTab">
                 <ul class="layui-tab-title">
                     <li class="layui-this">蜘蛛统计</li>
                     <li>访问记录</li>
                 </ul>
+                {{-- 与 Tab 标题同行的右侧工具栏：仅「访问记录」Tab 显示 --}}
+                <div class="spider-tab-toolbar" id="visitToolbar">
+                    <div class="spider-tab-filter">
+                        <select id="spiderFilter" class="layui-input">
+                            <option value="">全部蜘蛛</option>
+                        </select>
+                    </div>
+                    <button class="layui-btn layui-btn-sm layui-btn-primary" id="btnBlockManage"><i class="fa fa-ban"></i> 黑名单管理</button>
+                </div>
                 <div class="layui-tab-content">
 
                     {{-- ========== Tab 1：蜘蛛统计（默认打开） ========== --}}
@@ -90,14 +113,6 @@
 
                     {{-- ========== Tab 2：访问记录 ========== --}}
                     <div class="layui-tab-item">
-                        <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;">
-                            <div style="width:160px;">
-                                <select id="spiderFilter" class="layui-input">
-                                    <option value="">全部蜘蛛</option>
-                                </select>
-                            </div>
-                            <button class="layui-btn layui-btn-sm layui-btn-primary" id="btnBlockManage" style="margin-left:8px;"><i class="fa fa-ban"></i> 黑名单管理</button>
-                        </div>
                         <table id="spiderVisitTable" lay-filter="spiderVisitTable"></table>
                     </div>
                 </div>
@@ -315,9 +330,11 @@ layui.use(['table', 'laydate', 'jquery', 'layer', 'element'], function(){
         }
     });
 
-    // 表格在隐藏的 Tab 内渲染时宽度为 0，切换到「访问记录」时重新计算列宽
+    // Tab 标题行的右侧工具栏仅「访问记录」Tab 显示；表格在隐藏 Tab 内渲染宽度为 0，切换时重算列宽
     element.on('tab(spiderTab)', function(data) {
-        if (data.index === 1) {
+        var isVisitTab = data.index === 1;
+        $('#visitToolbar').toggleClass('is-show', isVisitTab);
+        if (isVisitTab) {
             setTimeout(function() {
                 table.resize('spiderVisitTable');
             }, 50);

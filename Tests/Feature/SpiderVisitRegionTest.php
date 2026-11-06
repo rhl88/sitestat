@@ -155,4 +155,43 @@ class SpiderVisitRegionTest extends CmsproSitestatTestCase
         // 访问记录表格包含「地区」列
         $this->assertStringContainsString("{field: 'region', title: '地区'", $html);
     }
+
+    public function test_访问记录工具栏位于Tab标题行且默认隐藏(): void
+    {
+        $admin = AdminUser::create([
+            'username' => 'spider_toolbar_tester',
+            'password' => 'password',
+            'name' => '测试管理员',
+            'status' => 1,
+        ]);
+
+        $response = $this->actingAs($admin, 'admin')->get('/admin/cmspro/sitestat/spider');
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $titlePos = strpos($html, '<ul class="layui-tab-title">');
+        $toolbarPos = strpos($html, 'id="visitToolbar"');
+        $contentPos = strpos($html, '<div class="layui-tab-content">');
+
+        $this->assertNotFalse($titlePos);
+        $this->assertNotFalse($toolbarPos, '应存在访问记录工具栏容器');
+        $this->assertNotFalse($contentPos);
+
+        // 工具栏位于 Tab 标题行之后、Tab 内容之前，即与标题同行显示
+        $this->assertGreaterThan($titlePos, $toolbarPos, '工具栏应在 Tab 标题行之后');
+        $this->assertLessThan($contentPos, $toolbarPos, '工具栏应在 Tab 内容之前（与标题同行）');
+
+        // 下拉框与黑名单管理按钮归属于该工具栏
+        $toolbarHtml = substr($html, $toolbarPos, $contentPos - $toolbarPos);
+        $this->assertStringContainsString('id="spiderFilter"', $toolbarHtml, '「全部蜘蛛」下拉框应在工具栏内');
+        $this->assertStringContainsString('id="btnBlockManage"', $toolbarHtml, '「黑名单管理」按钮应在工具栏内');
+
+        // 默认停留在「蜘蛛统计」Tab，工具栏不带 is-show（CSS 中 display:none，切到访问记录才显示）
+        $this->assertStringNotContainsString('class="spider-tab-toolbar is-show"', $html, '默认应隐藏访问记录工具栏');
+        $this->assertStringContainsString(
+            "$('#visitToolbar').toggleClass('is-show', isVisitTab)",
+            $html,
+            '切换 Tab 时应按当前 Tab 显隐工具栏'
+        );
+    }
 }
